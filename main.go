@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/ptrj96/go-car-storage-api/listings"
 	"github.com/ptrj96/go-car-storage-api/logging"
-	"github.com/rs/cors"
 )
 
 func main() {
@@ -22,17 +21,10 @@ func main() {
 	}).Methods("GET")
 	r.HandleFunc("/listings", listings.FindListingsHandler).Methods("POST")
 
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8083", "http://localhost"},
-		AllowCredentials: true,
-	})
-
-	cHandler := c.Handler(r)
-
 	port := getRouterPort()
 
 	logger.Printf("listening on port %s", port)
-	log.Fatal(http.ListenAndServe(":"+port, cHandler))
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 
 func getRouterPort() string {

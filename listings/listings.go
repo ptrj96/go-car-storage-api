@@ -8,6 +8,7 @@ import (
 	"slices"
 	"sort"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/ptrj96/go-car-storage-api/logging"
 )
 
@@ -20,8 +21,8 @@ type Listing struct {
 }
 
 type CarRequest struct {
-	Length   int `json:"length"`
-	Quantity int `json:"quantity"`
+	Length   int `json:"length" validate:"required"`
+	Quantity int `json:"quantity" validate:"required"`
 }
 
 type LocationResponse struct {
@@ -56,7 +57,20 @@ func FindListingsHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger.Print("hit listings endpoint")
 	var cars []CarRequest
-	err := json.NewDecoder(r.Body).Decode(&cars)
+	if err := json.NewDecoder(r.Body).Decode(&cars); err != nil {
+		logger.Printf("error unmarshalling json: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"message":"error unmarshalling json: ` + string(err.Error()) + `"}`))
+		return
+	}
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	if err := validate.Struct(cars[2]); err != nil {
+		logger.Printf("error validating payload: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"message":"error with json validation: ` + string(err.Error()) + `"}`))
+		return
+	}
 
 	listings, err := GetListings()
 	if err != nil {
