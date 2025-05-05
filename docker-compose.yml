@@ -1,0 +1,9 @@
+services:
+  app:
+    build:
+      context: .
+    environment:
+      - APP_PORT=8083
+    ports:
+     - "8083:8083"
+    
