@@ -65,11 +65,13 @@ func FindListingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(cars[2]); err != nil {
-		logger.Printf("error validating payload: %s", err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"message":"error with json validation: ` + string(err.Error()) + `"}`))
-		return
+	for _, car := range cars {
+		if err := validate.Struct(car); err != nil {
+			logger.Printf("error validating payload: %s", err)
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"message":"error with json validation: ` + string(err.Error()) + `"}`))
+			return
+		}
 	}
 
 	listings, err := GetListings()
